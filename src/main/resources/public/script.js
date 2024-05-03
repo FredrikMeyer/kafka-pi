@@ -82,6 +82,8 @@ function updatePlot() {
 
 updatePlot()
 
+let lastData = {};
+
 const socket = new WebSocket("ws://localhost:8081/ws/");
 socket.addEventListener("message", (event) => {
   let evt = JSON.parse(event.data);
@@ -95,6 +97,8 @@ socket.addEventListener("message", (event) => {
     let lastVal = data[2].at(-1)
     data[2].push(lastVal)
     console.log("est", val)
+
+    lastData.estimation = val;
   } else if (evt.topic == "pi-error") {
     let val = evt.payload;
     let lastIdxVal = data[0].at(-1) + 1 || -1;
@@ -102,9 +106,10 @@ socket.addEventListener("message", (event) => {
     let lastVal = data[1].at(-1);
     data[1].push(lastVal)
     data[2].push(val)
+    lastData.error = val;
     console.log("err", val)
   } else if (evt.topic == "randoms") {
     updateCanvas(evt.payload)
   }
-
+  document.getElementById("current-val").innerText = `Current estimation: ${lastData.estimation}. Error: ${lastData.error}`
 });
