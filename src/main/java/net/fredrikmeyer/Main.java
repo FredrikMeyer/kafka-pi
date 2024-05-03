@@ -1,8 +1,5 @@
 package net.fredrikmeyer;
 
-import io.javalin.Javalin;
-import io.javalin.http.staticfiles.Location;
-import io.javalin.websocket.WsContext;
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.streams.KafkaStreams;
 import org.apache.kafka.streams.StreamsBuilder;
@@ -16,18 +13,50 @@ import org.apache.kafka.streams.state.Stores;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Collection;
 import java.util.Properties;
-import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.CountDownLatch;
 
 public class Main {
     private static final Logger logger = LoggerFactory.getLogger(Main.class);
-    private static Collection<WsContext> estimationContexts = new ConcurrentLinkedDeque<>();
 
     public static void main(String[] args) {
-        Properties props = getProperties();
+        final KafkaStreams streams = buildStreams();
+        final var latch = new CountDownLatch(1);
 
+        Runtime
+                .getRuntime()
+                .addShutdownHook(new Thread("streams-shutdown-hook") {
+                    @Override
+                    public void run() {
+                        streams.close();
+                        latch.countDown();
+                    }
+                });
+        try {
+            // Start app, serving on localhost:8081
+            new JavalinApp().start();
+            // Start producing random numbers
+            new RandomProducer().start();
+
+            new EstimationConsumer<>(JavalinApp::publishMessage, "randoms", new Tuple.TupleDeserializer()).start();
+            new EstimationConsumer<>(JavalinApp::publishMessage, "pi-estimation", Serdes
+                    .Double()
+                    .deserializer()).start();
+            new EstimationConsumer<>(JavalinApp::publishMessage, "pi-error", Serdes
+                    .Double()
+                    .deserializer()).start();
+
+            streams.start();
+            latch.await();
+        } catch (Throwable e) {
+            logger.error(e.getMessage(), e);
+            System.exit(1);
+        }
+        System.exit(0);
+    }
+
+    private static KafkaStreams buildStreams() {
+        Properties props = getProperties();
         final StreamsBuilder builder = new StreamsBuilder();
 
         KStream<String, Integer> randoms = builder
@@ -46,68 +75,8 @@ public class Main {
                 .to("pi-error", Produced.with(Serdes.String(), Serdes.Double()));
 
         final Topology topology = builder.build();
-        final KafkaStreams streams = new KafkaStreams(topology, props);
-
-        System.out.println(topology.describe());
-
-        var app = Javalin
-                .create(config -> {
-                    config.staticFiles.add("src/main/resources/public/", Location.EXTERNAL);
-
-                    config.router.mount(router -> {
-                        router.ws("/ws", ws -> {
-                            ws.onConnect(ctx -> {
-                                estimationContexts.add(ctx);
-                            });
-
-                            ws.onClose(ctx -> {
-                                estimationContexts.remove(ctx);
-                                logger.info("Logged off: {}", ctx.reason());
-                            });
-                        });
-                    });
-                })
-                .start(8081);
-
-
-        final var latch = new CountDownLatch(1);
-
-        Runtime
-                .getRuntime()
-                .addShutdownHook(new Thread("streams-shutdown-hook") {
-                    @Override
-                    public void run() {
-                        streams.close();
-                        latch.countDown();
-                    }
-                });
-        try {
-            // Start producing random numbers
-            new RandomProducer().start();
-
-            new EstimationConsumer<>(Main::publishMessage, "randoms", new Tuple.TupleDeserializer()).start();
-            new EstimationConsumer<>(Main::publishMessage, "pi-estimation", Serdes
-                    .Double()
-                    .deserializer()).start();
-            new EstimationConsumer<>(Main::publishMessage, "pi-error", Serdes
-                    .Double()
-                    .deserializer()).start();
-
-            streams.start();
-            latch.await();
-        } catch (Throwable e) {
-            logger.error(e.getMessage(), e);
-            System.exit(1);
-        }
-        System.exit(0);
+        return new KafkaStreams(topology, props);
     }
-
-    private static <E> void publishMessage(E msg) {
-        estimationContexts.forEach(ctx -> {
-            ctx.send(msg);
-        });
-    }
-
 
     private static Properties getProperties() {
         Properties props = new Properties();
