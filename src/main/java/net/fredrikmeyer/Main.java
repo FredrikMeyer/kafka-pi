@@ -21,6 +21,7 @@ public class Main {
 
     public static void main(String[] args) {
         final KafkaStreams streams = buildStreams();
+        JavalinApp javalinApp = new JavalinApp();
         final var latch = new CountDownLatch(1);
 
         Runtime
@@ -28,13 +29,14 @@ public class Main {
                 .addShutdownHook(new Thread("streams-shutdown-hook") {
                     @Override
                     public void run() {
+                        javalinApp.stop();
                         streams.close();
                         latch.countDown();
                     }
                 });
         try {
             // Start app, serving on localhost:8081
-            new JavalinApp().start();
+            javalinApp.start();
             // Start producing random numbers
             new RandomProducer().start();
 

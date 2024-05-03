@@ -41,4 +41,8 @@ public class JavalinApp {
     public void start() {
         app.start(8081);
     }
+
+    public void stop() {
+        app.stop();
+    }
 }
