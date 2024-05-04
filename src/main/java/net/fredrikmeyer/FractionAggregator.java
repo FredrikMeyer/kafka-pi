@@ -7,6 +7,14 @@ import org.apache.kafka.common.serialization.Serializer;
 import java.io.*;
 
 public record FractionAggregator(long trues, long total) implements Serializable {
+    public static FractionAggregator aggregate(FractionAggregator previous, Integer value) {
+        return new FractionAggregator(previous.trues + value, previous.total() + 1);
+    }
+
+    public double getScaledFraction() {
+        return total == 0 ? 0 : 4. * trues / total;
+    }
+
     static public class FractionAggregatorSerializer implements Serializer<FractionAggregator> {
         @Override
         public byte[] serialize(String topic, FractionAggregator data) {
@@ -41,7 +49,7 @@ public record FractionAggregator(long trues, long total) implements Serializable
     public static class FractionAggregatorSerde extends Serdes.WrapperSerde<FractionAggregator> {
         public FractionAggregatorSerde() {
             super(new FractionAggregator.FractionAggregatorSerializer(),
-                    new FractionAggregator.FractionAggregatorDeserializer());
+                  new FractionAggregator.FractionAggregatorDeserializer());
         }
     }
 

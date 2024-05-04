@@ -29,8 +29,7 @@ public class EstimationConsumer<E> implements Runnable {
         properties.setProperty(ConsumerConfig.GROUP_ID_CONFIG, "my-consumer");
         properties.setProperty(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
 
-        var kafkaConsumer = new KafkaConsumer<>(properties, new StringDeserializer(),
-                deserializer);
+        var kafkaConsumer = new KafkaConsumer<>(properties, new StringDeserializer(), deserializer);
         this.kafkaConsumer = kafkaConsumer;
 
         kafkaConsumer.subscribe(Collections.singletonList(topic));
@@ -43,9 +42,7 @@ public class EstimationConsumer<E> implements Runnable {
 
     @Override
     public void run() {
-        while (!Thread
-                .currentThread()
-                .isInterrupted()) {
+        while (!Thread.currentThread().isInterrupted()) {
             ConsumerRecords<String, E> records = this.kafkaConsumer.poll(Duration.ofMillis(100));
             for (ConsumerRecord<String, E> record : records) {
                 var gson = new Gson();

@@ -24,16 +24,14 @@ public class Main {
         JavalinApp javalinApp = new JavalinApp();
         final var latch = new CountDownLatch(1);
 
-        Runtime
-                .getRuntime()
-                .addShutdownHook(new Thread("streams-shutdown-hook") {
-                    @Override
-                    public void run() {
-                        javalinApp.stop();
-                        streams.close();
-                        latch.countDown();
-                    }
-                });
+        Runtime.getRuntime().addShutdownHook(new Thread("streams-shutdown-hook") {
+            @Override
+            public void run() {
+                javalinApp.stop();
+                streams.close();
+                latch.countDown();
+            }
+        });
         try {
             // Start app, serving on localhost:8081
             javalinApp.start();
@@ -41,12 +39,10 @@ public class Main {
             new RandomProducer().start();
 
             new EstimationConsumer<>(JavalinApp::publishMessage, "randoms", new Tuple.TupleDeserializer()).start();
-            new EstimationConsumer<>(JavalinApp::publishMessage, "pi-estimation", Serdes
-                    .Double()
-                    .deserializer()).start();
-            new EstimationConsumer<>(JavalinApp::publishMessage, "pi-error", Serdes
-                    .Double()
-                    .deserializer()).start();
+            new EstimationConsumer<>(JavalinApp::publishMessage,
+                                     "pi-estimation",
+                                     Serdes.Double().deserializer()).start();
+            new EstimationConsumer<>(JavalinApp::publishMessage, "pi-error", Serdes.Double().deserializer()).start();
 
             streams.start();
             latch.await();
@@ -61,10 +57,9 @@ public class Main {
         Properties props = getProperties();
         final StreamsBuilder builder = new StreamsBuilder();
 
-        KStream<String, Integer> randoms = builder
-                .stream("randoms", Consumed.with(Serdes.String(), new Tuple.TupleSerde()))
-                .mapValues(Tuple::insideCircle)
-                .mapValues(v -> v ? 1 : 0);
+        KStream<String, Integer> randoms = builder.stream("randoms",
+                                                          Consumed.with(Serdes.String(), new Tuple.TupleSerde()))
+                                                  .mapValues(Tuple::insideCircle).mapValues(v -> v ? 1 : 0);
 
         KStream<String, Double> fractionTable = getFractionStream(randoms);
 
@@ -72,9 +67,8 @@ public class Main {
         fractionTable.to("pi-estimation", Produced.with(Serdes.String(), Serdes.Double()));
 
         // Also make a topic with the error
-        fractionTable
-                .mapValues(v -> Math.abs(Math.PI - v) / Math.PI)
-                .to("pi-error", Produced.with(Serdes.String(), Serdes.Double()));
+        fractionTable.mapValues(v -> Math.abs(Math.PI - v) / Math.PI)
+                     .to("pi-error", Produced.with(Serdes.String(), Serdes.Double()));
 
         final Topology topology = builder.build();
         return new KafkaStreams(topology, props);
@@ -84,26 +78,20 @@ public class Main {
         Properties props = new Properties();
         props.put(StreamsConfig.APPLICATION_ID_CONFIG, "streams-pi-compute");
         props.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
-        props.put(StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG, Serdes
-                .String()
-                .getClass());
-        props.put(StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG, Serdes
-                .String()
-                .getClass());
+        props.put(StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG, Serdes.String().getClass());
+        props.put(StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG, Serdes.String().getClass());
         // To see updates more often when subscribing
         props.put(StreamsConfig.COMMIT_INTERVAL_MS_CONFIG, "1000");
         return props;
     }
 
     private static KStream<String, Double> getFractionStream(KStream<String, Integer> stream) {
-        return stream
-                .groupByKey()
-                .aggregate(() -> new FractionAggregator(0, 0),
-                        (key, value, agg) -> new FractionAggregator(agg.trues() + value, agg.total() + 1), Materialized
-                                .<String, FractionAggregator>as(Stores.persistentKeyValueStore("average-store"))
-                                .withValueSerde(new FractionAggregator.FractionAggregatorSerde()))
-                .toStream()
-                .mapValues(avg -> avg.total() == 0 ? 0 : 4. * avg.trues() / avg.total());
+        return stream.groupByKey().aggregate(() -> new FractionAggregator(0, 0),
+                                             (key, value, agg) -> FractionAggregator.aggregate(agg, value),
+                                             Materialized.<String, FractionAggregator>as(Stores.persistentKeyValueStore(
+                                                                 "average-store"))
+                                                         .withValueSerde(new FractionAggregator.FractionAggregatorSerde()))
+                     .toStream().mapValues(FractionAggregator::getScaledFraction);
     }
 
 }

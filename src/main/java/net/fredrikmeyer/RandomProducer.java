@@ -30,12 +30,7 @@ public class RandomProducer implements Runnable {
     }
 
     private ProducerRecord<String, Tuple> generateRandomRecord() {
-        var randomTuple = new Random().doubles()
-                .map(d -> 2 * d)
-                .map(d -> d - 1)
-                .limit(2)
-                .boxed()
-                .toList();
+        var randomTuple = new Random().doubles().map(d -> 2 * d - 1).limit(2).boxed().toList();
 
         return new ProducerRecord<>("randoms", "single-key", new Tuple(randomTuple.get(0), randomTuple.get(1)));
     }
@@ -43,16 +38,14 @@ public class RandomProducer implements Runnable {
     @Override
     public void run() {
         try {
-            while (!Thread.currentThread()
-                    .isInterrupted()) {
+            while (!Thread.currentThread().isInterrupted()) {
                 var record = generateRandomRecord();
                 this.producer.send(record);
 
                 Thread.sleep(10);
             }
         } catch (InterruptedException e) {
-            Thread.currentThread()
-                    .interrupt();
+            Thread.currentThread().interrupt();
         } finally {
             producer.close();
         }

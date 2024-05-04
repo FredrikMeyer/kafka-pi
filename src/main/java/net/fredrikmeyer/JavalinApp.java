@@ -15,21 +15,20 @@ public class JavalinApp {
     private static Collection<WsContext> estimationContexts = new ConcurrentLinkedDeque<>();
 
     public JavalinApp() {
-        this.app = Javalin
-                .create(config -> {
-                    config.staticFiles.add("src/main/resources/public/", Location.EXTERNAL);
+        this.app = Javalin.create(config -> {
+            config.staticFiles.add("src/main/resources/public/", Location.EXTERNAL);
 
-                    config.router.mount(router -> {
-                        router.ws("/ws", ws -> {
-                            ws.onConnect(estimationContexts::add);
+            config.router.mount(router -> {
+                router.ws("/ws", ws -> {
+                    ws.onConnect(estimationContexts::add);
 
-                            ws.onClose(ctx -> {
-                                estimationContexts.remove(ctx);
-                                logger.info("Logged off: {}", ctx.reason());
-                            });
-                        });
+                    ws.onClose(ctx -> {
+                        estimationContexts.remove(ctx);
+                        logger.info("Logged off: {}", ctx.reason());
                     });
                 });
+            });
+        });
     }
 
     static <E> void publishMessage(E msg) {
