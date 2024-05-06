@@ -7,8 +7,6 @@ import org.apache.kafka.streams.kstream.Consumed;
 import org.apache.kafka.streams.kstream.KStream;
 import org.apache.kafka.streams.kstream.Materialized;
 import org.apache.kafka.streams.kstream.Produced;
-import org.apache.kafka.streams.processor.AbstractProcessor;
-import org.apache.kafka.streams.processor.api.Processor;
 import org.apache.kafka.streams.state.Stores;
 
 import static net.fredrikmeyer.PiEstimationConstants.*;

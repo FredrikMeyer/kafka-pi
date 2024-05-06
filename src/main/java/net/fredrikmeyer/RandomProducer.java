@@ -25,7 +25,7 @@ public class RandomProducer {
     }
 
     public void process(Tuple tuple) {
-        ProducerRecord<String, Tuple> record = new ProducerRecord<>(TOPIC_RANDOMS, tuple);
+        ProducerRecord<String, Tuple> record = new ProducerRecord<>(TOPIC_RANDOMS, "some-key", tuple);
         producer.send(record);
     }
 
