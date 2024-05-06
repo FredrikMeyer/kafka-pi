@@ -38,7 +38,6 @@ public record Tuple(double x, double y) implements Serializable {
         @Override
         public byte[] serialize(String topic, Tuple data) {
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
-
             try (ObjectOutputStream out = new ObjectOutputStream(bos)) {
                 out.writeObject(data);
                 out.flush();

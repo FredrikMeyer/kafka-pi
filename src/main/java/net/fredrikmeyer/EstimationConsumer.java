@@ -9,6 +9,7 @@ import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.serialization.Deserializer;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
+import org.jetbrains.annotations.NotNull;
 
 import java.time.Duration;
 import java.util.Collections;
@@ -23,18 +24,13 @@ public class EstimationConsumer<E> implements Runnable {
     public EstimationConsumer(Consumer<String> endpoint, final String topic, Deserializer<E> deserializer) {
         this.endpoint = endpoint;
         this.topic = topic;
-        Properties properties = new Properties();
-        properties.setProperty(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
-        properties.setProperty(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
-        properties.setProperty(ConsumerConfig.GROUP_ID_CONFIG, "my-consumer");
-        properties.setProperty(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
+        Properties properties = getProperties();
 
         var kafkaConsumer = new KafkaConsumer<>(properties, new StringDeserializer(), deserializer);
         this.kafkaConsumer = kafkaConsumer;
 
         kafkaConsumer.subscribe(Collections.singletonList(topic));
     }
-
     public void start() {
         Thread thread = new Thread(this);
         thread.start();
@@ -55,4 +51,14 @@ public class EstimationConsumer<E> implements Runnable {
         }
         this.kafkaConsumer.close();
     }
+
+    private static @NotNull Properties getProperties() {
+        Properties properties = new Properties();
+        properties.setProperty(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
+        properties.setProperty(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
+        properties.setProperty(ConsumerConfig.GROUP_ID_CONFIG, "my-consumer");
+        properties.setProperty(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
+        return properties;
+    }
+
 }

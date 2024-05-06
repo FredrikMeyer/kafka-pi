@@ -12,7 +12,7 @@ import java.util.concurrent.ConcurrentLinkedDeque;
 public class JavalinApp {
     private final Javalin app;
     private static final Logger logger = LoggerFactory.getLogger(JavalinApp.class);
-    private static Collection<WsContext> estimationContexts = new ConcurrentLinkedDeque<>();
+    private static final Collection<WsContext> estimationContexts = new ConcurrentLinkedDeque<>();
 
     public JavalinApp() {
         this.app = Javalin.create(config -> {

@@ -2,7 +2,7 @@
 const canvas = document.getElementById("canvas")
 
 /** @type {CanvasRenderingContext2D} */
-var ctx = canvas.getContext("2d");
+let ctx = canvas.getContext("2d");
 
 let width = canvas.width;
 let height = canvas.height;
@@ -88,7 +88,7 @@ const socket = new WebSocket("ws://localhost:8081/ws/");
 socket.addEventListener("message", (event) => {
   let evt = JSON.parse(event.data);
 
-  if (evt.topic == "pi-estimation") {
+  if (evt.topic === "pi-estimation") {
     console.log(data)
     let val = evt.payload;
     let lastIdxVal = data[0].at(-1) + 1 || -1;
@@ -99,7 +99,7 @@ socket.addEventListener("message", (event) => {
     console.log("est", val)
 
     lastData.estimation = val;
-  } else if (evt.topic == "pi-error") {
+  } else if (evt.topic === "pi-error") {
     let val = evt.payload;
     let lastIdxVal = data[0].at(-1) + 1 || -1;
     data[0].push(lastIdxVal + 1);
@@ -108,7 +108,7 @@ socket.addEventListener("message", (event) => {
     data[2].push(val)
     lastData.error = val;
     console.log("err", val)
-  } else if (evt.topic == "randoms") {
+  } else if (evt.topic === "randoms") {
     updateCanvas(evt.payload)
   }
   document.getElementById("current-val").innerText = `Current estimation: ${lastData.estimation}. Error: ${lastData.error}`
