@@ -11,10 +11,6 @@ public record FractionAggregator(long trues, long total) implements Serializable
         return new FractionAggregator(previous.trues + value, previous.total() + 1);
     }
 
-    public double getScaledFraction() {
-        return total == 0 ? 0 : 4. * trues / total;
-    }
-
     static public class FractionAggregatorSerializer implements Serializer<FractionAggregator> {
         @Override
         public byte[] serialize(String topic, FractionAggregator data) {

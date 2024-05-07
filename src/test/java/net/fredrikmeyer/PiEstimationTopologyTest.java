@@ -35,6 +35,8 @@ class PiEstimationTopologyTest {
                                                                Instant.now());
 
 
+        System.out.println(PiEstimationTopology.getTopology().describe());
+
         inputTopic = testDriver.createInputTopic(PiEstimationConstants.TOPIC_RANDOMS,
                                                  Serdes.String().serializer(),
                                                  new Tuple.TupleSerde().serializer());
