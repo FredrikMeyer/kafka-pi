@@ -1,4 +1,4 @@
-package net.fredrikmeyer;
+package net.fredrikmeyer.kafkapi;
 
 import io.javalin.Javalin;
 import io.javalin.http.staticfiles.Location;
@@ -9,10 +9,11 @@ import org.slf4j.LoggerFactory;
 import java.util.Collection;
 import java.util.concurrent.ConcurrentLinkedDeque;
 
-public class JavalinApp {
-    private final Javalin app;
+public class JavalinApp implements MessagePublisher {
+    // Public only for tests... Is there a way to avoid this? (better code organization?)
+    public final Javalin app;
     private static final Logger logger = LoggerFactory.getLogger(JavalinApp.class);
-    private static final Collection<WsContext> estimationContexts = new ConcurrentLinkedDeque<>();
+    private final Collection<WsContext> estimationContexts = new ConcurrentLinkedDeque<>();
 
     public JavalinApp() {
         this.app = Javalin.create(config -> {
@@ -31,7 +32,7 @@ public class JavalinApp {
         });
     }
 
-    static <E> void publishMessage(E msg) {
+    public <E> void publishMessage(E msg) {
         estimationContexts.forEach(ctx -> {
             ctx.send(msg);
         });
@@ -44,4 +45,5 @@ public class JavalinApp {
     public void stop() {
         app.stop();
     }
+
 }

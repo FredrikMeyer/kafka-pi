@@ -1,4 +1,4 @@
-package net.fredrikmeyer;
+package net.fredrikmeyer.kafkapi;
 
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.streams.StreamsConfig;

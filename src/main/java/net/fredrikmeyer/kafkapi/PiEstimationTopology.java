@@ -1,4 +1,4 @@
-package net.fredrikmeyer;
+package net.fredrikmeyer.kafkapi;
 
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.streams.StreamsBuilder;
@@ -9,7 +9,7 @@ import org.apache.kafka.streams.kstream.Materialized;
 import org.apache.kafka.streams.kstream.Produced;
 import org.apache.kafka.streams.state.Stores;
 
-import static net.fredrikmeyer.PiEstimationConstants.*;
+import static net.fredrikmeyer.kafkapi.PiEstimationConstants.*;
 
 public class PiEstimationTopology {
 
@@ -25,13 +25,14 @@ public class PiEstimationTopology {
 
         // Also make a topic with the error
         fractionStream.mapValues(v -> Math.abs(Math.PI - v) / Math.PI)
-                     .to(TOPIC_PI_ERROR, Produced.with(Serdes.String(), Serdes.Double()));
+                      .to(TOPIC_PI_ERROR, Produced.with(Serdes.String(), Serdes.Double()));
 
         return builder.build();
     }
 
     private static KStream<String, Double> getPiEstimationStream(KStream<String, Tuple> stream) {
-        var fractionStore = Materialized.<String, FractionAggregator>as(Stores.persistentKeyValueStore("average-store"))
+        var fractionStore = Materialized.<String, FractionAggregator>as(
+                                                Stores.persistentKeyValueStore("aggregate-store"))
                                         .withValueSerde(new FractionAggregator.FractionAggregatorSerde());
 
         return stream

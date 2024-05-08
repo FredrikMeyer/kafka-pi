@@ -1,4 +1,4 @@
-package net.fredrikmeyer;
+package net.fredrikmeyer.kafkapi;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;

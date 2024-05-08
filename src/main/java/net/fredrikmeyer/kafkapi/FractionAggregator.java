@@ -1,4 +1,4 @@
-package net.fredrikmeyer;
+package net.fredrikmeyer.kafkapi;
 
 import org.apache.kafka.common.serialization.Deserializer;
 import org.apache.kafka.common.serialization.Serdes;
@@ -47,8 +47,8 @@ public record FractionAggregator(long trues, long total) implements Serializable
             super(new FractionAggregator.FractionAggregatorSerializer(),
                   new FractionAggregator.FractionAggregatorDeserializer());
         }
-    }
 
+    }
     public FractionAggregator() {
         this(0, 0);
     }

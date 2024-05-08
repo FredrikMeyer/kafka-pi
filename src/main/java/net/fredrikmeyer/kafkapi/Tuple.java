@@ -1,10 +1,14 @@
-package net.fredrikmeyer;
+package net.fredrikmeyer.kafkapi;
 
+import org.apache.kafka.clients.consumer.Consumer;
+import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.serialization.Deserializer;
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.common.serialization.Serializer;
+import org.apache.kafka.common.serialization.StringDeserializer;
 
 import java.io.*;
+import java.util.Properties;
 
 public record Tuple(double x, double y) implements Serializable {
 
@@ -48,8 +52,7 @@ public record Tuple(double x, double y) implements Serializable {
         }
     }
 
-
-    public Tuple() {
-        this(0, 0);
+    public static Consumer<String, Tuple> getConsumer(Properties properties) {
+        return new KafkaConsumer<>(properties, new StringDeserializer(), new TupleDeserializer());
     }
 }

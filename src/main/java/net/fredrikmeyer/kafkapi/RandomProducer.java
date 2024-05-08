@@ -1,4 +1,4 @@
-package net.fredrikmeyer;
+package net.fredrikmeyer.kafkapi;
 
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
@@ -9,7 +9,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Properties;
 
-import static net.fredrikmeyer.PiEstimationConstants.TOPIC_RANDOMS;
+import static net.fredrikmeyer.kafkapi.PiEstimationConstants.TOPIC_RANDOMS;
 
 public class RandomProducer {
     private final Producer<String, Tuple> producer;

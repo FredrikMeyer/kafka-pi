@@ -1,6 +1,4 @@
-package net.fredrikmeyer;
-
-import org.apache.kafka.clients.producer.Producer;
+package net.fredrikmeyer.kafkapi;
 
 import java.util.Random;
 
