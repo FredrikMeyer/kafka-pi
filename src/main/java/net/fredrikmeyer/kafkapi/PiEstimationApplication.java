@@ -9,6 +9,10 @@ import java.util.Properties;
 
 import static net.fredrikmeyer.kafkapi.PiEstimationConstants.*;
 
+/**
+ * Sets up a Kafka stream topology to estimate Pi, and republishes messages via the MessagePublisher
+ * interface.
+ */
 public class PiEstimationApplication {
     private final KafkaStreams streams;
     private final MessagePublisher messagePublisher;
@@ -21,12 +25,13 @@ public class PiEstimationApplication {
 
     public void start() {
         // Start producing random numbers
-        new TupleGenerator(new RandomProducer()).start();
+        new TupleGenerator(new TupleProcessor()).start();
 
         // Consume estimations and publish on web socket
         new EstimationConsumer<>(messagePublisher::publishMessage, TOPIC_RANDOMS, Tuple.getConsumer(
                 PiEstimationConstants.consumerProperties("random-consumer"))).start();
 
+        // Consume estimations and errors and publish them to the MessagePublisher.
         new EstimationConsumer<>(messagePublisher::publishMessage, TOPIC_PI_ESTIMATION,
                                  new KafkaConsumer<>(consumerProperties("estimation-consumer"),
                                                      Serdes.String().deserializer(),

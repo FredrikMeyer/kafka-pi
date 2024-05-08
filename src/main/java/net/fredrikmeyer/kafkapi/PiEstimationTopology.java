@@ -11,6 +11,10 @@ import org.apache.kafka.streams.state.Stores;
 
 import static net.fredrikmeyer.kafkapi.PiEstimationConstants.*;
 
+/**
+ * A Kafka streams topology to estimate Pi, given a topic that produces random numbers TOPIC_RANDOMS.
+ * The results are outputted to the topics TOPIC_PI_ESTIMATION and TOPIC_PI_ERROR.
+ */
 public class PiEstimationTopology {
 
     public static Topology getTopology() {

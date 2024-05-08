@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 
-class RandomProducerTest {
+class TupleProcessorTest {
     @Test
     public void test_produces_random_numberS() {
         MockProducer<String, Tuple> mockProducer = new MockProducer<>(true,
@@ -15,9 +15,9 @@ class RandomProducerTest {
                                                                       new Tuple.TupleSerializer());
 
         Tuple tuple = new Tuple(0.3, 0.2);
-        RandomProducer randomProducer = new RandomProducer(mockProducer);
+        TupleProcessor tupleProcessor = new TupleProcessor(mockProducer);
 
-        randomProducer.process(tuple);
+        tupleProcessor.process(tuple);
 
         assertEquals(mockProducer.history().size(), 1);
         assertEquals(mockProducer.history().getFirst().value(), tuple);

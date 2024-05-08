@@ -2,14 +2,18 @@ package net.fredrikmeyer.kafkapi;
 
 import java.util.Random;
 
+/**
+ * Produces an infinite stream of random tuples and sends them to a Kafka topic
+ * via the TupleProcessor class.
+ */
 public class TupleGenerator implements Runnable {
     private final Random random;
-    private final RandomProducer producer;
+    private final TupleProcessor processor;
     private final int MESSAGE_INTERVAL = 10;
 
-    public TupleGenerator(RandomProducer producer) {
+    public TupleGenerator(TupleProcessor processor) {
         random = new Random();
-        this.producer = producer;
+        this.processor = processor;
     }
 
     public void start() {
@@ -27,14 +31,14 @@ public class TupleGenerator implements Runnable {
         try {
             while (!Thread.currentThread().isInterrupted()) {
                 var tuple = generateTuple();
-                this.producer.process(tuple);
+                this.processor.process(tuple);
 
                 Thread.sleep(MESSAGE_INTERVAL);
             }
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         } finally {
-            producer.close();
+            processor.close();
         }
     }
 }

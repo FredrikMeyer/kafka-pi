@@ -10,8 +10,17 @@ import org.apache.kafka.common.serialization.StringDeserializer;
 import java.io.*;
 import java.util.Properties;
 
+/**
+ * Represents a tuple of coordinates in the x-y-plane.
+ * Also contains static classes/methods for serialization/deserialization.
+ * @param x The x coordinate.
+ * @param y The y coordinate.
+ */
 public record Tuple(double x, double y) implements Serializable {
 
+    /**
+     * @return True if this is inside the unit circle.
+     */
     public boolean insideCircle() {
         return Math.pow(x, 2) + Math.pow(y, 2) < 1;
     }

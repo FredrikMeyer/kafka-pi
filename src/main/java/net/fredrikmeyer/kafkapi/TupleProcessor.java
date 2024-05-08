@@ -11,16 +11,20 @@ import java.util.Properties;
 
 import static net.fredrikmeyer.kafkapi.PiEstimationConstants.TOPIC_RANDOMS;
 
-public class RandomProducer {
+/**
+ * Processes tuples of (random) numbers and publishes them on a Kafka topic via a
+ * org.apache.kafka.clients.producer.Producer implementation.
+ */
+public class TupleProcessor {
     private final Producer<String, Tuple> producer;
 
-    public RandomProducer() {
+    public TupleProcessor() {
         Properties properties = getProperties();
         var tupleSerde = new Tuple.TupleSerde();
         this.producer = new KafkaProducer<>(properties, new StringSerializer(), tupleSerde.serializer());
     }
 
-    public RandomProducer(Producer<String, Tuple> producer) {
+    public TupleProcessor(Producer<String, Tuple> producer) {
         this.producer = producer;
     }
 

@@ -32,7 +32,11 @@ public class JavalinApp implements MessagePublisher {
         });
     }
 
-    public <E> void publishMessage(E msg) {
+    /**
+     * Publish msg to clients currently listening on websockets.
+     * @param msg The message to publish.
+     */
+    public void publishMessage(String msg) {
         estimationContexts.forEach(ctx -> {
             ctx.send(msg);
         });

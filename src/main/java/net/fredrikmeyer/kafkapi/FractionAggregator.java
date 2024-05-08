@@ -6,6 +6,12 @@ import org.apache.kafka.common.serialization.Serializer;
 
 import java.io.*;
 
+/**
+ * Container class to keep track of true and total observations. Contains static classes for serialization and
+ * deserialization.
+ * @param trues Number of true observations.
+ * @param total Total number of observations.
+ */
 public record FractionAggregator(long trues, long total) implements Serializable {
     public static FractionAggregator aggregate(FractionAggregator previous, Integer value) {
         return new FractionAggregator(previous.trues + value, previous.total() + 1);
